@@ -14,8 +14,8 @@ class BuildContainer:
     def __init__(self, client: DockerClient, name: str, workdir: str, image, volumes):
         assert client is not None
         assert name is not None
-        assert callable(image)
-        assert callable(volumes)
+        assert image is None or callable(image)
+        assert volumes is None or callable(volumes)
         self.client = client
         self.name = name
         self.workdir = workdir
@@ -45,9 +45,7 @@ class BuildContainer:
 
     def checkExists(self) -> bool:
         try:
-            container = self.client.containers.get(self.name)
-            assert container.image.id == self._image().id  # Container does exist already with another image! Do clean!
-            self._container._value = container
+            self._container._value = self.client.containers.get(self.name)
             return True
         except NotFound as e:
             return False
@@ -74,8 +72,7 @@ class BuildContainer:
             self._container().kill(signal=signum)
 
 
-
-class BuildEnvironment():
+class BuildHandler():
     def __init__(self, client: DockerClient, name: str, workdir: str, image, volumes):
         self.client = client
         self.name = name
@@ -136,35 +133,3 @@ class BuildEnvironment():
 
     def runCommand(self, cmd, environment=None, privileged=False, user=''):
         self._container().exec(cmd=cmd, environment=environment, privileged=privileged, user=user)
-
-
-
-def getOrCreateImage(client: DockerClient, config: Config):
-    image_name = config["container.image"]
-    # Load value from config or build one
-    if "container.image" in config:
-        try:
-            print("Getting image '" + image_name + "'...")
-            return client.images.get(image_name)
-        except ImageNotFound as e:
-            print("Not found locally!")
-            pass
-        print("Pulling '" + image_name + "'")
-        return client.images.pull(image_name)
-    elif "container.build" in config:
-        # Build from Dockerfile
-        image_name = "devenv_" + config["container.name"]
-
-        print(
-            "Building from Dockerfile "
-            + "'" + config["container.build.dockerfile"] + "'"
-            + " in path '" + config["container.build.path"] + "'"
-            + " the image '" + image_name + "'"
-        )
-
-        return client.images.build(
-            path=config["container.build.path"],
-            dockerfile=config["container.build.dockerfile"],
-            network_mode=config["container.build.network_mode"],
-            tag=image_name
-        )
