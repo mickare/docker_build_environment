@@ -1,6 +1,8 @@
 import argparse
 from typing import Dict
 
+import sys
+
 from dbuild.dcontext import DContext
 
 
@@ -52,7 +54,7 @@ class Command:
 class CommandManager:
 
     def __init__(self, parser: argparse.ArgumentParser):
-        self.parser = parser
+        self.parser = parser # type: argparse.ArgumentParser
         self.subparsers = parser.add_subparsers(dest="command")
         self.commands = dict()  # type: Dict[str, Command]
 
@@ -64,7 +66,14 @@ class CommandManager:
         return self.commands[name]
 
     def run(self, context: DContext, args):
-        assert args.command in self.commands  # Unknown command, although defined in arparser command list!
+        if args.command is None:
+            self.parser.print_help()
+            sys.exit(0)
+        if args.command not in self.commands:
+            print("Unknown command \"" + str(args.command) + "\"!")
+            self.parser.print_help()
+            sys.exit(1)
+        #assert args.command in self.commands  # Unknown command, although defined in arparser command list!
         self.getCommand(name=args.command).run(context=context, args=args)
 
 

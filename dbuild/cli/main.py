@@ -3,6 +3,7 @@ import os
 import signal
 
 import docker
+import errno
 import yaml
 
 from dbuild.cli.commands import CommandManager, CleanCommand, RunCommand
@@ -37,6 +38,8 @@ def loadConfig(args):
     config_file = "dbuild.cfg"
     if args.config:
         config_file = args.config
+        if not os.path.isfile(config_file):
+            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), config_file)
 
     if os.path.isfile(config_file):
         with open(file=config_file, mode='r') as fc:
