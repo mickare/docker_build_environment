@@ -2,16 +2,14 @@ import argparse
 import os
 import signal
 
-import docker
 import yaml
 
-from dbuild.cli.commands import CommandManager, CleanCommand, RunCommand
-from dbuild.config.config import Config
-from dbuild.dcontext import DContext
-from dbuild.denvironment import BuildHandler
+from docker_wrap.cli.commands import CommandManager, CleanCommand, RunCommand
+from docker_wrap.config.config2 import Config
+from docker_wrap.context import DContext
 
 
-def loadConfig(args):
+def load_config(args):
     # Default config
     config = Config(values={
         "container": {
@@ -34,7 +32,7 @@ def loadConfig(args):
         "docker": {}
     })
     # Load config file
-    config_file = "dbuild.cfg"
+    config_file = "docker-wrap.yml"
     if args.config:
         config_file = args.config
 
@@ -57,21 +55,19 @@ def main():
     parser.add_argument(
         "--config", "-c",
         dest="config",
-        help="use a config, other than the default './dbuild.cfg'",
+        help="use a config, other than the default './docker-wrap.yml'",
         type=str
     )
 
-    commandManager = CommandManager(parser=parser)
-    commandManager.registerCommand(CleanCommand())
-    commandManager.registerCommand(RunCommand())
+    cmd_manager = CommandManager(parser=parser)
+    cmd_manager.registerCommand(CleanCommand())
+    cmd_manager.registerCommand(RunCommand())
 
     args = parser.parse_args()
 
-    context = DContext(config=loadConfig(args))
+    context = DContext(config=load_config(args))
 
-    signal.signal(signal.SIGINT, context.exitGracefully)
-    signal.signal(signal.SIGTERM, context.exitGracefully)
+    signal.signal(signal.SIGINT, context.exit_gracefully)
+    signal.signal(signal.SIGTERM, context.exit_gracefully)
 
-    commandManager.run(context, args)
-
-
+    cmd_manager.run(context, args)

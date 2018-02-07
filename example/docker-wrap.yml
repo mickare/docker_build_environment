@@ -1,0 +1,26 @@
+
+host:
+  before:
+    - echo 'host.before - Called on the host machine before the container is started.'
+  after:
+    - echo 'host.after - Called on the host machine after the container stopped.'
+
+container:
+  image: "ubuntu:latest"
+  build: .
+  volumes:
+    - .:/workdir/:rw
+  network_mode: host
+  networks:
+
+  ports:
+    - 80:80
+  environment:
+    ENV_VARIABLE: "content"
+  before:
+    - "echo 'container.before - Called in the container before command execution.'"
+  after:
+    - "echo 'container.after - Called in the container after command execution.'"
+
+
+

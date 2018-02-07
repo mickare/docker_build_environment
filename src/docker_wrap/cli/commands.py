@@ -1,7 +1,7 @@
 import argparse
 from typing import Dict
 
-from dbuild.dcontext import DContext
+from docker_wrap.context import DContext
 
 
 class Command:
@@ -93,8 +93,8 @@ class RunCommand(Command):
 
     def run(self, context: DContext, args):
         user = args.user if args.user else ''
-        workdir = args.workdir if args.workdir else context.getDefaultWorkdir()
-        user = args.user if args.user else context.getCurrentUser()
+        workdir = args.workdir if args.workdir else context.get_default_workdir()
+        user = args.user if args.user else context.get_current_user()
         environment = dict()  # type: Dict[str, str]
         if args.env:
             for e in args.env:

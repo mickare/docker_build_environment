@@ -1,4 +1,4 @@
-from typing import TypeVar, Generic, Callable, Any
+from typing import TypeVar, Generic, Callable, Any, Optional
 
 T = TypeVar("T")
 
@@ -11,10 +11,17 @@ class Cache(Generic[T]):
         self._kwargs = kwargs
         self._value = None  # type: T
 
-    def __call__(self, *args, **kwargs):
+    @property
+    def value(self) -> T:
         if self._value is None:
             self._value = self._func(*self._args, **self._kwargs)
+            assert self._value is not None
         return self._value
 
-    def get(self) -> T:
+    @property
+    def unsafe(self) -> Optional[T]:
         return self._value
+
+    @unsafe.setter
+    def unsafe(self, value):
+        self._value = value

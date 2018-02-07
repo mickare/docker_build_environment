@@ -1,1 +1,2 @@
-docker
+docker>=3.0.1
+PyYAML>=3.12
